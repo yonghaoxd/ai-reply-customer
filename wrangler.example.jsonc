@@ -1,0 +1,64 @@
+{
+  // Messenger AI 客服系统 — 你自己用的站（Cloudflare Workers 免费版配置）
+  // 复制成 wrangler.jsonc 再填你自己的值。wrangler.jsonc 不会上传到 GitHub。
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "messenger-ai-cs",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // 后台网页（vite build 输出到 dist/）
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*", "/webhook", "/privacy", "/media/*"]
+  },
+
+  // D1 数据库：第一次部署前用 `npx wrangler d1 create messenger-ai-cs` 建立，再把 database_id 填进来
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "messenger-ai-cs",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // 队列：第一次部署前用 `npx wrangler queues create messenger-inbound` 建立
+  "queues": {
+    "producers": [{ "binding": "INBOUND", "queue": "messenger-inbound" }],
+    "consumers": [
+      {
+        "queue": "messenger-inbound",
+        "max_batch_size": 5,
+        "max_batch_timeout": 1,
+        "max_retries": 2
+      }
+    ]
+  },
+
+  // KV：存产品图片 / 视频。第一次用 `npx wrangler kv namespace create MEDIA` 建立，再把 id 填进来
+  "kv_namespaces": [{ "binding": "MEDIA", "id": "REPLACE_WITH_YOUR_KV_ID" }],
+
+  // Workers AI：知识库向量（bge-m3）
+  "ai": { "binding": "AI" },
+
+  "vars": {
+    // 部署后改成你的网址，例如 https://messenger-ai-cs.<你的子域>.workers.dev
+    "APP_URL": "https://messenger-ai-cs.<your-subdomain>.workers.dev",
+    // Meta Graph API 版本
+    "GRAPH_VERSION": "v23.0",
+    // 你的 Meta App ID（在 Meta 开发者后台 App 设定 > 基本 可以看到）；用来分辨 bot 自己发的信息
+    "META_APP_ID": ""
+  },
+
+  // 每天马来西亚时间凌晨 3 点清理旧资料；每 15 分钟检查自动跟进
+  "triggers": { "crons": ["0 19 * * *", "*/15 * * * *"] }
+
+  // 机密（用 `npx wrangler secret put <名字>` 设定，不要写在这里）：
+  //   META_APP_SECRET   — Meta App 的 App Secret（验证 webhook 签名）
+  //   META_VERIFY_TOKEN — 你自己定的一串字，设定 webhook 时填同一串
+  //   ENCRYPTION_KEY    — 加密 Page token / API key 用，`openssl rand -base64 32` 生成
+  //   SETUP_KEY         — 第一次建立老板账号时要输入的一串字，防止别人抢先注册
+}

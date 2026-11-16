@@ -1,0 +1,28 @@
+flowchart LR
+  subgraph Meta["Meta"]
+    C([Customer on Messenger])
+  end
+  subgraph CF["Cloudflare Workers (free plan)"]
+    WH["/webhook<br/>verify signature, ack in ms"]
+    Q[["Queue<br/>messenger-inbound"]]
+    BOT["Bot pipeline<br/>dedupe → voice → keyword rules →<br/>rate limit → RAG → LLM tools → SOP"]
+    API["Dashboard API (Hono)<br/>auth, RBAC, demo guard"]
+    CRON(["Cron<br/>follow-ups · cleanup"])
+    D1[("D1 (SQLite)<br/>conversations, leads, SOP,<br/>KB chunks + vectors, evals")]
+    KV[("KV<br/>product media")]
+    AI["Workers AI<br/>bge-m3 embeddings · Whisper"]
+  end
+  LLM["DeepSeek<br/>chat + tool calling"]
+  TG["Telegram<br/>handoff / lead alerts"]
+  UI["React dashboard<br/>Inbox · Simulator · Reports · Evals"]
+
+  C -- message --> WH --> Q --> BOT
+  BOT -- reply / media --> C
+  BOT <--> D1
+  BOT --> AI
+  BOT <--> LLM
+  BOT --> TG
+  BOT --> KV
+  UI <--> API <--> D1
+  API --> BOT
+  CRON --> BOT

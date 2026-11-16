@@ -1,0 +1,45 @@
+{
+  // 公开 Demo 站 — 跟你自己用的站是两个完全分开的 worker + 数据库。
+  // 这里只有虚构的示范资料，没有 FB Page、Telegram，也没有你的 DeepSeek key。
+  //   部署：npm run deploy:demo
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "messenger-ai-cs-demo",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*", "/webhook", "/privacy", "/media/*"]
+  },
+
+  // Demo 自己的数据库：`npx wrangler d1 create messenger-ai-cs-demo`，再把 database_id 填进来
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "messenger-ai-cs-demo",
+      "database_id": "0bdb00af-f821-4eb5-8ac1-4839b3e73117",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // Workers AI：知识库向量
+  "ai": { "binding": "AI" },
+
+  "vars": {
+    "DEMO_SITE": "1",
+    // 每天最多几次 AI 回复（用完后 bot 回一句固定的话）
+    "DEMO_DAILY_CAP": "100",
+    "APP_URL": "https://messenger-ai-cs-demo.yonghaomah.workers.dev",
+    "REPO_URL": "https://github.com/yonghaoxd/messenger-ai-cs",
+    "GRAPH_VERSION": "v23.0"
+  },
+
+  // 每天马来西亚时间凌晨 3 点：整个 Demo 重置成示范资料
+  "triggers": { "crons": ["0 19 * * *"] }
+
+  // 机密只有一个：Demo 专用的 DeepSeek key（建议另开一个，只充少少钱）
+  //   npx wrangler secret put DEMO_DEEPSEEK_KEY -c wrangler.demo.jsonc
+}

@@ -1,0 +1,5 @@
+# 本地开发用（复制成 .dev.vars）。正式环境用 `npx wrangler secret put` 设定，不要用这个文件。
+META_APP_SECRET=你的_meta_app_secret
+META_VERIFY_TOKEN=自己定一串字
+ENCRYPTION_KEY=用_openssl_rand_-base64_32_生成
+SETUP_KEY=自己定一串字

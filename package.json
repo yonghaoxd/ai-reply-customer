@@ -1,0 +1,34 @@
+{
+  "name": "messenger-ai-cs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Messenger AI 客服系统 — Cloudflare Workers + D1 + DeepSeek",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build && wrangler dev",
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.worker.json --noEmit && tsc -p tsconfig.web.json --noEmit",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "deploy": "vite build && wrangler deploy",
+    "deploy:demo": "vite build && wrangler deploy -c wrangler.demo.jsonc",
+    "db:migrate:demo": "wrangler d1 migrations apply DB --remote -c wrangler.demo.jsonc",
+    "test": "node test/run.mjs"
+  },
+  "dependencies": {
+    "hono": "^4.13.16",
+    "mammoth": "^1.13.0",
+    "pdfjs-dist": "^5.7.284",
+    "react": "^19.1.10",
+    "react-dom": "^19.1.10"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261103.1",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.7",
+    "wrangler": "^4.156.2"
+  }
+}
